@@ -1,0 +1,57 @@
+services:
+  openproject:
+    image: openproject/community:13.4.1-slim
+    container_name: openproject
+    restart: always
+    expose:
+      - "8080"
+    environment:
+      # Database configuration
+      OPENPROJECT_RAILS__DATABASE: "postgres"
+      OPENPROJECT_RAILS__DATABASE__HOST: "db"
+      OPENPROJECT_RAILS__DATABASE__USER: "openproject"
+      OPENPROJECT_RAILS__DATABASE__PASSWORD: "openproject"
+      OPENPROJECT_RAILS__DATABASE__NAME: "openproject"
+
+      # Secret key base (should be persistent)
+      OPENPROJECT_SECRET_KEY_BASE: "changeme-supersecret"
+
+      # Optional: Email settings (use real SMTP in production)
+      OPENPROJECT_EMAIL__DELIVERY_METHOD: "smtp"
+      OPENPROJECT_EMAIL__SMTP__ADDRESS: "mail"
+      OPENPROJECT_EMAIL__SMTP__PORT: "25"
+      DATABASE_URL: "postgresql://openproject:openproject@db:5432/openproject"
+      OPENPROJECT_HOST__NAME: openproject.user.localhost
+
+      # when ssl
+      #OPENPROJECT_RAILS__RELATIVE_URL_ROOT: ""
+      #OPENPROJECT_HTTPS: "true"  # If Kong terminates SSL
+    depends_on:
+      - db
+    networks:
+      - ogna
+    volumes:
+      - openproject_data:/var/openproject/assets
+    env_file:
+      - .env
+
+  db:
+    image: postgres:15
+    container_name: openproject-db
+    restart: always
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    networks:
+      - ogna
+    env_file:
+      - .env
+    expose:
+      - "5432"
+
+networks:
+  ogna:
+    external: true
+
+volumes:
+  db_data:
+  openproject_data:
