@@ -1,3 +1,12 @@
+networks:
+  openproject_net:
+  ogna:
+    external: true
+
+volumes:
+  db_data:
+  openproject_data:
+
 services:
   openproject:
     image: openproject/community:13.4.1-slim
@@ -8,38 +17,32 @@ services:
     environment:
       # Database configuration
       OPENPROJECT_RAILS__DATABASE: "postgres"
-      OPENPROJECT_RAILS__DATABASE__HOST: "openproject_db"
-      OPENPROJECT_RAILS__DATABASE__USER: "openproject"
-      OPENPROJECT_RAILS__DATABASE__PASSWORD: "openproject"
-      OPENPROJECT_RAILS__DATABASE__NAME: "openproject"
-
+      DATABASE_URL: "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@openprojectdb:5432/${POSTGRES_DB}"
       # Secret key base (should be persistent)
-      OPENPROJECT_SECRET_KEY_BASE: "changeme-supersecret"
 
       # Optional: Email settings (use real SMTP in production)
       OPENPROJECT_EMAIL__DELIVERY_METHOD: "smtp"
       OPENPROJECT_EMAIL__SMTP__ADDRESS: "mail"
       OPENPROJECT_EMAIL__SMTP__PORT: "25"
-      DATABASE_URL: "postgresql://openproject:openproject@openproject_db:5432/openproject"
-      OPENPROJECT_HOST__NAME: openproject.user.localhost
 
       # when ssl
       #OPENPROJECT_RAILS__RELATIVE_URL_ROOT: ""
       #OPENPROJECT_HTTPS: "true"  # If Kong terminates SSL
     depends_on:
-      - openproject_db
+      openprojectdb:
+        condition: service_healthy
     networks:
-      - ogna
       - openproject_net
+      - ogna
     volumes:
       - openproject_data:/var/openproject/assets
     env_file:
       - .env
 
-  openproject_db:
+  openprojectdb:
     image: postgres:15
-    hostname: openproject_db
-    container_name: openproject-db
+    hostname: openprojectdb
+    container_name: openprojectdb
     restart: always
     volumes:
       - db_data:/var/lib/postgresql/data
@@ -49,12 +52,8 @@ services:
       - .env
     expose:
       - "5432"
-
-networks:
-  openproject_net:
-  ogna:
-    external: true
-
-volumes:
-  db_data:
-  openproject_data:
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
