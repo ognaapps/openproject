@@ -8,7 +8,7 @@ services:
     environment:
       # Database configuration
       OPENPROJECT_RAILS__DATABASE: "postgres"
-      OPENPROJECT_RAILS__DATABASE__HOST: "db"
+      OPENPROJECT_RAILS__DATABASE__HOST: "openproject_db"
       OPENPROJECT_RAILS__DATABASE__USER: "openproject"
       OPENPROJECT_RAILS__DATABASE__PASSWORD: "openproject"
       OPENPROJECT_RAILS__DATABASE__NAME: "openproject"
@@ -20,35 +20,38 @@ services:
       OPENPROJECT_EMAIL__DELIVERY_METHOD: "smtp"
       OPENPROJECT_EMAIL__SMTP__ADDRESS: "mail"
       OPENPROJECT_EMAIL__SMTP__PORT: "25"
-      DATABASE_URL: "postgresql://openproject:openproject@db:5432/openproject"
+      DATABASE_URL: "postgresql://openproject:openproject@openproject_db:5432/openproject"
       OPENPROJECT_HOST__NAME: openproject.user.localhost
 
       # when ssl
       #OPENPROJECT_RAILS__RELATIVE_URL_ROOT: ""
       #OPENPROJECT_HTTPS: "true"  # If Kong terminates SSL
     depends_on:
-      - db
+      - openproject_db
     networks:
       - ogna
+      - openproject_net
     volumes:
       - openproject_data:/var/openproject/assets
     env_file:
       - .env
 
-  db:
+  openproject_db:
     image: postgres:15
+    hostname: openproject_db
     container_name: openproject-db
     restart: always
     volumes:
       - db_data:/var/lib/postgresql/data
     networks:
-      - ogna
+      - openproject_net
     env_file:
       - .env
     expose:
       - "5432"
 
 networks:
+  openproject_net:
   ogna:
     external: true
 
