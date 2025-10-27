@@ -41,7 +41,8 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.openproject.rule=Host(`openproject.${OGNA_USER}.${OGNA_HOST}`)"
-      - "traefik.http.routers.openproject.entrypoints=web"
+      - "traefik.http.routers.openproject.entrypoints=websecure"
+      - "traefik.http.routers.openproject.tls.certresolver=hetzner"
       - "traefik.http.services.openproject.loadbalancer.server.port=8080"
       - "traefik.docker.network=ogna"
 
