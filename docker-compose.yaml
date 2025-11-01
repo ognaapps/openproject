@@ -4,8 +4,18 @@ networks:
     external: true
 
 volumes:
-  db_data:
+  postgres_data:
+    driver: local
+    driver_opts:
+      type: none
+      device: /mnt/volume-db/openproject/postgress
+      o: bind
   openproject_data:
+    driver: local
+    driver_opts:
+      type: none
+      device: /mnt/volume-db/openproject/data
+      o: bind
 
 services:
   openproject:
@@ -52,7 +62,7 @@ services:
     container_name: openprojectdb
     restart: always
     volumes:
-      - db_data:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql/data
     networks:
       - openproject_net
     env_file:
