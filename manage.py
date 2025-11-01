@@ -32,6 +32,8 @@ def parse_args(argv):
 
 def up():
     """Start docker compose services"""
+    for vol in VOLUMES:
+        subprocess.run(["mkdir", "-p", f"/mnt/volume-db/{PROJECT_NAME}/{vol}"], check=True)    
     subprocess.run(["docker", "compose", "-p", PROJECT_NAME, "up", "-d"], check=True)
     time.sleep(120)
     cmd = [
